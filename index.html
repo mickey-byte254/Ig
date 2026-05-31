@@ -1,0 +1,196 @@
+import React, { useState } from 'react';
+// Make sure to install lucide-react: npm install lucide-react
+import { Heart, MessageCircle, Send, Bookmark, Home, Search, PlusSquare, Clapperboard, User, MoreHorizontal } from 'lucide-react';
+
+const MOCK_STORIES = [
+  { id: 1, username: 'Your Story', avatar: 'https://unsplash.com', viewed: true, isUser: true },
+  { id: 2, username: 'traveler_kenya', avatar: 'https://unsplash.com', viewed: false },
+  { id: 3, username: 'foodie_nairobi', avatar: 'https://unsplash.com', viewed: false },
+  { id: 4, username: 'safari_clover', avatar: 'https://unsplash.com', viewed: false },
+  { id: 5, username: 'tech_jambo', avatar: 'https://unsplash.com', viewed: true },
+];
+
+const INITIAL_POSTS = [
+  {
+    id: 1,
+    username: 'traveler_kenya',
+    userAvatar: 'https://unsplash.com',
+    location: 'Maasai Mara, Kenya',
+    image: 'https://unsplash.com',
+    likes: 1242,
+    isLiked: false,
+    isSaved: false,
+    caption: 'Chasing sunsets across the savannah. Truly unforgettable! 🌿✨',
+    timeAgo: '2 hours ago',
+    comments: [
+      { id: 1, username: 'safari_clover', text: 'Stunning capture!' },
+      { id: 2, username: 'johndoe', text: 'Adding this to my bucket list.' }
+    ]
+  },
+  {
+    id: 2,
+    username: 'foodie_nairobi',
+    userAvatar: 'https://unsplash.com',
+    location: 'Nairobi, Kenya',
+    image: 'https://unsplash.com',
+    likes: 548,
+    isLiked: false,
+    isSaved: false,
+    caption: 'Sunday morning done right. Best local brew in town! ☕🥐',
+    timeAgo: '5 hours ago',
+    comments: [
+      { id: 1, username: 'alice_w', text: 'Where is this café located?' }
+    ]
+  }
+];
+
+export default function App() {
+  const [posts, setPosts] = useState(INITIAL_POSTS);
+  const [commentInputs, setCommentInputs] = useState({});
+
+  const handleLike = (postId) => {
+    setPosts(posts.map(post => post.id === postId ? {
+      ...post,
+      isLiked: !post.isLiked,
+      likes: post.isLiked ? post.likes - 1 : post.likes + 1
+    } : post));
+  };
+
+  const handleSave = (postId) => {
+    setPosts(posts.map(post => post.id === postId ? { ...post, isSaved: !post.isSaved } : post));
+  };
+
+  const handleAddComment = (postId, e) => {
+    e.preventDefault();
+    const commentText = commentInputs[postId]?.trim();
+    if (!commentText) return;
+
+    setPosts(posts.map(post => post.id === postId ? {
+      ...post,
+      comments: [...post.comments, { id: Date.now(), username: 'your_username', text: commentText }]
+    } : post));
+    setCommentInputs({ ...commentInputs, [postId]: '' });
+  };
+
+  return (
+    <div className="bg-white md:bg-gray-50 min-h-screen text-black antialiased flex flex-col items-center">
+      
+      {/* 1. App Top Header (Fixed and exact layout) */}
+      <header className="bg-white border-b border-gray-200 fixed top-0 w-full max-w-md h-12 flex items-center justify-between px-4 z-50">
+        <span className="text-[22px] font-semibold font-serif tracking-tight select-none cursor-pointer" style={{ fontFamily: "'Grand Hotel', cursive, sans-serif" }}>
+          Instagram
+        </span>
+        <div className="flex items-center space-x-5">
+          <button className="relative hover:opacity-70 transition">
+            <Heart size={24} className="stroke-[1.8]" />
+          </button>
+          <button className="relative hover:opacity-70 transition">
+            <MessageCircle size={24} className="stroke-[1.8]" />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] w-4 h-4 flex items-center justify-center font-bold">2</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content Shell restricted to native mobile dimensions */}
+      <main className="w-full max-w-md bg-white min-h-screen pt-12 pb-12 shadow-sm border-x border-gray-100">
+        
+        {/* 2. Instagram Stories Tray */}
+        <div className="flex items-center space-x-4 p-3 border-b border-gray-100 overflow-x-auto scrollbar-none">
+          {MOCK_STORIES.map((story) => (
+            <div key={story.id} className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer">
+              <div className={`p-[2px] rounded-full ${story.isUser ? 'border-none' : story.viewed ? 'border border-gray-200' : 'bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600'}`}>
+                <div className="bg-white p-[2px] rounded-full">
+                  <img src={story.avatar} alt={story.username} className="w-14 h-14 rounded-full object-cover" />
+                </div>
+              </div>
+              <span className="text-xs text-gray-500 max-w-[64px] truncate text-center">{story.username}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* 3. Feed Streams */}
+        <div className="divide-y divide-gray-100">
+          {posts.map((post) => (
+            <article key={post.id} className="pb-4">
+              {/* Post Header */}
+              <div className="flex items-center justify-between p-3">
+                <div className="flex items-center space-x-3">
+                  <img src={post.userAvatar} alt={post.username} className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                  <div>
+                    <div className="flex items-center space-x-1">
+                      <span className="text-sm font-semibold hover:text-gray-600 cursor-pointer">{post.username}</span>
+                    </div>
+                    <span className="text-xs text-gray-500 font-normal">{post.location}</span>
+                  </div>
+                </div>
+                <button className="text-gray-700 p-1"><MoreHorizontal size={18} /></button>
+              </div>
+
+              {/* Exact 1:1 Aspect Ratio Feed Image */}
+              <div className="w-full aspect-square bg-gray-50 overflow-hidden select-none" onDoubleClick={() => handleLike(post.id)}>
+                <img src={post.image} alt="Feed" className="w-full h-full object-cover" />
+              </div>
+
+              {/* Interactive Engagement Row */}
+              <div className="px-3 pt-3 flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <button onClick={() => handleLike(post.id)} className="transition transform active:scale-125 duration-100">
+                    <Heart size={24} className={`stroke-[1.8] ${post.isLiked ? 'fill-red-500 stroke-red-500' : 'text-black'}`} />
+                  </button>
+                  <button className="hover:opacity-60"><MessageCircle size={24} className="stroke-[1.8]" /></button>
+                  <button className="hover:opacity-60"><Send size={24} className="stroke-[1.8]" /></button>
+                </div>
+                <button onClick={() => handleSave(post.id)}>
+                  <Bookmark size={24} className={`stroke-[1.8] ${post.isSaved ? 'fill-black text-black' : 'text-black'}`} />
+                </button>
+              </div>
+
+              {/* Metrics & Context */}
+              <div className="px-3 pt-2">
+                <p className="text-sm font-semibold mb-1">{post.likes.toLocaleString()} likes</p>
+                <p className="text-sm leading-relaxed">
+                  <span className="font-semibold mr-1.5 cursor-pointer">{post.username}</span>
+                  {post.caption}
+                </p>
+                
+                {/* Comments Container */}
+                {post.comments.length > 0 && (
+                  <div className="mt-1.5 space-y-0.5">
+                    <p className="text-sm text-gray-500 cursor-pointer py-0.5">View all {post.comments.length} comments</p>
+                    {post.comments.map((comment) => (
+                      <p key={comment.id} className="text-sm">
+                        <span className="font-semibold mr-1.5">{comment.username}</span>
+                        {comment.text}
+                      </p>
+                    ))}
+                  </div>
+                )}
+                <span className="text-[10px] text-gray-400 font-medium tracking-wide uppercase mt-1 block">{post.timeAgo}</span>
+              </div>
+
+              {/* Inline Comment Entry Field */}
+              <form onSubmit={(e) => handleAddComment(post.id, e)} className="px-3 pt-3 mt-2 border-t border-gray-50 flex items-center justify-between">
+                <input
+                  type="text"
+                  placeholder="Add a comment..."
+                  value={commentInputs[post.id] || ''}
+                  onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                  className="w-full text-sm outline-none bg-transparent placeholder-gray-400 text-gray-800"
+                />
+                <button 
+                  type="submit" 
+                  disabled={!commentInputs[post.id]?.trim()}
+                  className="text-sky-500 font-semibold text-sm disabled:opacity-0 transition duration-200 ml-2"
+                >
+                  Post
+                </button>
+              </form>
+            </article>
+          ))}
+        </div>
+      </main>
+
+      {/* 4. Native Persistent Base Dock */}
+      <footer className="bg-white border-t border-gray-200 fixed bottom-0 w-full max-w-md h-12 flex items-center justify-between px-6 z-50">
+        <button className="text-black transform active:scale-95"><Home size={24} className="stroke-[2]" /></button>
+        <button className="text-black transform active:scale-95"><Search size={24} className="stroke-[2]" /></button>
